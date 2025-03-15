@@ -27,7 +27,31 @@ jobs:
       - name: Rodar ESLint para verificar código
         run: npm run lint
 
+      - name: Publicar Cobertura de Testes
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Analisar código com SonarQube
         run: sonar-scanner
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  e2e_tests:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Rodar Cypress (Testes Funcionais)
+        run: npm run cypress:run
