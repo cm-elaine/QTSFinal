@@ -1,0 +1,33 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Rodar testes unitários e de integração
+        run: npm test -- --coverage
+
+      - name: Rodar ESLint para verificar código
+        run: npm run lint
+
+      - name: Analisar código com SonarQube
+        run: sonar-scanner
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
