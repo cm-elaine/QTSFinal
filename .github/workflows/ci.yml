@@ -1,4 +1,3 @@
-# Teste para rodar o workflow
 name: CI Pipeline
 
 on:
