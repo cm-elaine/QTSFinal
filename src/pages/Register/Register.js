@@ -1,3 +1,5 @@
+import React from "react";
+
 import styles from "./Register.module.css";
 
 import { useEffect, useState } from "react";

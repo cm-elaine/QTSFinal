@@ -1,5 +1,7 @@
 // CSS
 import styles from "./Post.module.css";
+import React from "react";
+
 
 // hooks
 import { useFetchDocument } from "../../hooks/useFetchDocument";

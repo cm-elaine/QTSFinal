@@ -5,29 +5,42 @@ import { doc, getDoc } from "firebase/firestore";
 export const useFetchDocument = (docCollection, id) => {
   const [document, setDocument] = useState(null);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!db) {
+      setError("Firestore não está configurado corretamente.");
+      setLoading(false);
+      return;
+    }
+
+    if (!docCollection || !id) {
+      setError("Parâmetros inválidos para buscar documento.");
+      setLoading(false);
+      return;
+    }
+
     const loadDocument = async () => {
       setLoading(true);
-
       try {
-        const docRef = await doc(db, docCollection, id);
+        const docRef = doc(db, docCollection, id);
         const docSnap = await getDoc(docRef);
 
-        setDocument(docSnap.data());
+        if (docSnap.exists()) {
+          setDocument({ id: docSnap.id, ...docSnap.data() });
+        } else {
+          setError("Documento não encontrado.");
+        }
       } catch (error) {
-        console.log(error);
+        console.error("Erro ao buscar documento:", error);
         setError(error.message);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     loadDocument();
   }, [docCollection, id]);
-
-  console.log(document);
 
   return { document, loading, error };
 };
