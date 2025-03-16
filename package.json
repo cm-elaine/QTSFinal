@@ -12,12 +12,14 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
-"scripts": {
-  "test": "jest --coverage",
-  "test:watch": "jest --watch",
-  "cypress:open": "cypress open",
-  "cypress:run": "cypress run"
-},
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -46,6 +48,6 @@
     "msw": "^2.7.3"
   },
   "jest": {
-  "setupFilesAfterEnv": ["<rootDir>/.jest.setup.js"]
-}
+    "setupFilesAfterEnv": ["<rootDir>/.jest.setup.js"]
+  }
 }
