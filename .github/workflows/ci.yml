@@ -1,4 +1,4 @@
-# Teste para rodar o workflow
+# Teste para rodar o workflo
 name: CI Pipeline
 
 on:
