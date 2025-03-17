@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { db } from "../firebase/config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { db as firebaseDB } from "../firebase/config";
 
-export const useFetchDocument = (docCollection, id) => {
+export const useFetchDocument = (docCollection, id, dbInstance = firebaseDB) => {
   const [document, setDocument] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db) {
+    if (!dbInstance) {
       setError("Firestore não está configurado corretamente.");
       setLoading(false);
       return;
@@ -23,7 +23,7 @@ export const useFetchDocument = (docCollection, id) => {
     const loadDocument = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, docCollection, id);
+        const docRef = doc(dbInstance, docCollection, id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -32,7 +32,6 @@ export const useFetchDocument = (docCollection, id) => {
           setError("Documento não encontrado.");
         }
       } catch (error) {
-        console.error("Erro ao buscar documento:", error);
         setError(error.message);
       } finally {
         setLoading(false);
@@ -40,7 +39,7 @@ export const useFetchDocument = (docCollection, id) => {
     };
 
     loadDocument();
-  }, [docCollection, id]);
+  }, [docCollection, id, dbInstance]);
 
   return { document, loading, error };
 };
