@@ -6,6 +6,8 @@ import { useAuthValue } from "../../contexts/AuthContext";
 import { useFetchDocument } from "../../hooks/useFetchDocument";
 import { useUpdateDocument } from "../../hooks/useUpdateDocument";
 
+/* eslint-disable no-unused-vars */
+
 const EditPost = () => {
   const { id } = useParams();
   const { document: post } = useFetchDocument("posts", id);

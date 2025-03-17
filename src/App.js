@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
@@ -31,7 +32,7 @@ import { AuthProvider } from "./contexts/AuthContext";
   {/* Seu código de rotas aqui */}
 </BrowserRouter>;
 
-
+// eslint-disable-next-line no-unused-vars
 const auth = getAuth();
 
 function App() {
