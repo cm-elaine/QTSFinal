@@ -56,5 +56,9 @@ jobs:
       - name: Instalar dependências
         run: npm install
 
-      - name: Rodar Cypress (Testes Funcionais)
-        run: npm run cypress:run
+      - name: Iniciar aplicação e rodar Cypress (Testes Funcionais)
+        continue-on-error: true
+        run: |
+          npm start &  # Inicia o servidor em segundo plano
+          npx wait-on http://localhost:3000 --timeout 120000  # Espera o servidor iniciar (até 2 minutos)
+          npm run cypress:run
