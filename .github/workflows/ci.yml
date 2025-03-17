@@ -32,13 +32,13 @@ jobs:
         run: npm run lint || echo "ESLint warnings/errors detected, but pipeline will continue."
 
       - name: Analisar código com SonarCloud
-        run: |
-          sonar-scanner \
-            -Dsonar.organization=cm-elaine \
-            -Dsonar.projectKey=cm-elaine_QTSFinal2 \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.organization=cm-elaine
+            -Dsonar.projectKey=cm-elaine_QTSFinal2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Analisar código com SonarQube
         run: sonar-scanner
