@@ -22,23 +22,24 @@ const CreatePost = () => {
     e.preventDefault();
     setFormError("");
 
-    // validate image
+    let error = ""; // variável local para armazenar o erro
+
+    // valida a URL da imagem
     try {
       new URL(image);
-    } catch (error) {
-      setFormError("A imagem precisa ser uma URL.");
+    } catch (err) {
+      error = "A imagem precisa ser uma URL.";
     }
 
-    // create tags array
+    // cria array de tags
     const tagsArray = tags.split(",").map((tag) => tag.trim().toLowerCase());
 
-    // check values
+    // verifica se todos os campos estão preenchidos
     if (!title || !image || !tags || !body) {
-      setFormError("Por favor, preencha todos os campos!");
+      error = "Por favor, preencha todos os campos!";
     }
 
     console.log(tagsArray);
-
     console.log({
       title,
       image,
@@ -48,7 +49,11 @@ const CreatePost = () => {
       createdBy: user.displayName,
     });
 
-    if(formError) return
+    // se houver erro, define o estado e interrompe a execução
+    if (error) {
+      setFormError(error);
+      return;
+    }
 
     insertDocument({
       title,
@@ -59,7 +64,7 @@ const CreatePost = () => {
       createdBy: user.displayName,
     });
 
-    // redirect to home page
+    // redireciona para a página inicial
     navigate("/");
   };
 
