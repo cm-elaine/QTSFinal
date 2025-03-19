@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { db } from "../firebase/config";
 import { updateDoc, doc } from "firebase/firestore";
 
@@ -22,40 +22,41 @@ const updateReducer = (state, action) => {
 
 export const useUpdateDocument = (docCollection) => {
   const [response, dispatch] = useReducer(updateReducer, initialState);
-
-  // deal with memory leak
-  const [cancelled, setCancelled] = useState(false);
+  const cancelled = useRef(false);
 
   const checkCancelBeforeDispatch = (action) => {
-    if (!cancelled) {
+    if (!cancelled.current) {
       dispatch(action);
     }
   };
 
   const updateDocument = async (uid, data) => {
+    // Verifica imediatamente se o hook foi cancelado
+    if (cancelled.current) return;
+
     checkCancelBeforeDispatch({ type: "LOADING" });
 
     try {
-      const docRef = await doc(db, docCollection, uid);
-
-      console.log(docRef);
-
+      // `doc` é uma função síncrona que retorna a referência do documento
+      const docRef = doc(db, docCollection, uid);
       const updatedDocument = await updateDoc(docRef, data);
 
-      console.log(updateDocument);
+      if (cancelled.current) return;
 
       checkCancelBeforeDispatch({
         type: "UPDATED_DOC",
         payload: updatedDocument,
       });
     } catch (error) {
-      console.log(error);
+      if (cancelled.current) return;
       checkCancelBeforeDispatch({ type: "ERROR", payload: error.message });
     }
   };
 
   useEffect(() => {
-    return () => setCancelled(true);
+    return () => {
+      cancelled.current = true;
+    };
   }, []);
 
   return { updateDocument, response };
