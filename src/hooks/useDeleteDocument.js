@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { db } from "../firebase/config";
 import { doc, deleteDoc } from "firebase/firestore";
 
@@ -23,32 +23,42 @@ const deleteReducer = (state, action) => {
 export const useDeleteDocument = (docCollection) => {
   const [response, dispatch] = useReducer(deleteReducer, initialState);
 
-  // deal with memory leak
-  const [cancelled, setCancelled] = useState(false);
+  // Usamos useRef para lidar com cancelamento imediatamente
+  const cancelled = useRef(false);
 
   const checkCancelBeforeDispatch = (action) => {
-    if (!cancelled) {
+    if (!cancelled.current) {
       dispatch(action);
     }
   };
 
   const deleteDocument = async (id) => {
+    // Se já estiver cancelado, não prossegue
+    if (cancelled.current) return;
+
     checkCancelBeforeDispatch({ type: "LOADING" });
 
     try {
+      // Apenas executa deleteDoc se o hook não estiver cancelado
       const deletedDocument = await deleteDoc(doc(db, docCollection, id));
+
+      if (cancelled.current) return;
 
       checkCancelBeforeDispatch({
         type: "DELETED_DOC",
         payload: deletedDocument,
       });
     } catch (error) {
+      if (cancelled.current) return;
+
       checkCancelBeforeDispatch({ type: "ERROR", payload: error.message });
     }
   };
 
   useEffect(() => {
-    return () => setCancelled(true);
+    return () => {
+      cancelled.current = true;
+    };
   }, []);
 
   return { deleteDocument, response };
