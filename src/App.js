@@ -27,11 +27,6 @@ import Footer from "./components/Footer";
 // context
 import { AuthProvider } from "./contexts/AuthContext";
 
-// eslint-disable-next-line sonarjs/no-unused-expression
-<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-  {/* Seu código de rotas aqui */}
-</BrowserRouter>;
-
 // eslint-disable-next-line no-unused-vars
 const auth = getAuth();
 
