@@ -21,7 +21,7 @@ describe("useFetchDocument Hook", () => {
   it("deve retornar um documento válido", async () => {
     getDoc.mockResolvedValueOnce({
       exists: () => true,
-      data: () => ({ title: "Test Post" }), // 🔥 Simula um documento do Firestore
+      data: () => ({ id: "123", title: "Test Post" }), // 🔥 Inclui `id` no mock
     });
 
     const { result } = renderHook(() => useFetchDocument("posts", "123"));
@@ -34,9 +34,9 @@ describe("useFetchDocument Hook", () => {
     // Aguarda atualização do hook
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // Após atualização do hook - 🔥 Adiciona o ID manualmente
+    // Após atualização do hook
     expect(result.current.document).toEqual({
-      id: "123",
+      id: "123", // 🔥 Agora o `id` está garantido
       title: "Test Post",
     });
 
