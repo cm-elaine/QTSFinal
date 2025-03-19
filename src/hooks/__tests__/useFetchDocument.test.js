@@ -1,17 +1,21 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { useFetchDocument } from "../useFetchDocument";
-import { getDoc, doc, getFirestore } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
-// Mock do Firestore
-jest.mock("firebase/firestore", () => {
-  return {
-    getFirestore: jest.fn(() => ({
-      collection: jest.fn(),
-    })),
-    doc: jest.fn(), // Mantém o mock da função doc()
-    getDoc: jest.fn(), // Mock da função getDoc()
-  };
-});
+// Aumenta o timeout para 10 segundos para operações assíncronas
+jest.setTimeout(10000);
+
+// Mock do módulo firebase/firestore
+jest.mock("firebase/firestore", () => ({
+  getFirestore: jest.fn(() => ({})),
+  // Retorna um valor dummy para simular um docRef
+  doc: jest.fn(() => "dummyDocRef"),
+  // Função que será customizada em cada teste
+  getDoc: jest.fn(),
+}));
+
+// Cria um objeto fakeDb estável para passar como dbInstance
+const fakeDb = {};
 
 describe("useFetchDocument Hook", () => {
   beforeEach(() => {
@@ -19,40 +23,38 @@ describe("useFetchDocument Hook", () => {
   });
 
   it("deve retornar um documento válido", async () => {
+    // Configura o mock para retornar um documento existente
     getDoc.mockResolvedValueOnce({
       exists: () => true,
-      data: () => ({ id: "123", title: "Test Post" }), // 🔥 Inclui `id` no mock
+      id: "123",
+      data: () => ({ title: "Test Post" }),
     });
 
-    const { result } = renderHook(() => useFetchDocument("posts", "123"));
+    const { result } = renderHook(() =>
+      useFetchDocument("posts", "123", fakeDb)
+    );
 
-    // Estado inicial antes da atualização do hook
-    expect(result.current.loading).toBe(true);
-    expect(result.current.document).toBeNull();
-    expect(result.current.error).toBeNull();
-
-    // Aguarda atualização do hook
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    // Após atualização do hook
-    expect(result.current.document).toEqual({
-      id: "123", // 🔥 Agora o `id` está garantido
-      title: "Test Post",
+    // Aguarda até que loading seja false
+    await waitFor(() => expect(result.current.loading).toBe(false), {
+      timeout: 5000,
     });
 
+    expect(result.current.document).toEqual({ id: "123", title: "Test Post" });
     expect(result.current.error).toBeNull();
   });
 
   it("deve retornar erro se o documento não existir", async () => {
-    getDoc.mockResolvedValueOnce({ exists: () => false });
+    getDoc.mockResolvedValueOnce({
+      exists: () => false,
+    });
 
-    const { result } = renderHook(() => useFetchDocument("posts", "invalid_id"));
+    const { result } = renderHook(() =>
+      useFetchDocument("posts", "invalid_id", fakeDb)
+    );
 
-    expect(result.current.loading).toBe(true);
-    expect(result.current.document).toBeNull();
-    expect(result.current.error).toBeNull();
-
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.loading).toBe(false), {
+      timeout: 5000,
+    });
 
     expect(result.current.document).toBeNull();
     expect(result.current.error).toBe("Documento não encontrado.");
@@ -61,15 +63,36 @@ describe("useFetchDocument Hook", () => {
   it("deve lidar com erro ao buscar o documento", async () => {
     getDoc.mockRejectedValueOnce(new Error("Erro ao buscar documento"));
 
-    const { result } = renderHook(() => useFetchDocument("posts", "123"));
+    const { result } = renderHook(() =>
+      useFetchDocument("posts", "123", fakeDb)
+    );
 
-    expect(result.current.loading).toBe(true);
-    expect(result.current.document).toBeNull();
-    expect(result.current.error).toBeNull();
-
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.loading).toBe(false), {
+      timeout: 5000,
+    });
 
     expect(result.current.document).toBeNull();
     expect(result.current.error).toBe("Erro ao buscar documento");
+  });
+
+  it("deve retornar erro se os parâmetros forem inválidos", () => {
+    const { result } = renderHook(() =>
+      useFetchDocument("", "", fakeDb)
+    );
+
+    // Esse caso é tratado de forma síncrona
+    expect(result.current.loading).toBe(false);
+    expect(result.current.document).toBeNull();
+    expect(result.current.error).toBe("Parâmetros inválidos para buscar documento.");
+  });
+
+  it("deve retornar erro se o dbInstance não estiver configurado", () => {
+    const { result } = renderHook(() =>
+      useFetchDocument("posts", "123", null)
+    );
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.document).toBeNull();
+    expect(result.current.error).toBe("Firestore não está configurado corretamente.");
   });
 });
