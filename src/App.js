@@ -17,7 +17,7 @@ import CreatePost from "./pages/CreatePost/CreatePost";
 import Search from "./pages/Search/Search";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
-import Dashboard from "./pages/Dashboard/Dashbord";
+import Dashboard from "./pages/Dashboard/Dashboard";
 import EditPost from "./pages/EditPost/EditPost";
 
 // components
