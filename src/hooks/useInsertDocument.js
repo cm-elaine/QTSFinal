@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import { useReducer, useEffect, useRef } from "react";
 import { db } from "../firebase/config";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 
@@ -23,16 +23,19 @@ const insertReducer = (state, action) => {
 export const useInsertDocument = (docCollection) => {
   const [response, dispatch] = useReducer(insertReducer, initialState);
 
-  // deal with memory leak
-  const [cancelled, setCancelled] = useState(false);
+  // Usamos useRef para o controle de cancelamento
+  const cancelled = useRef(false);
 
   const checkCancelBeforeDispatch = (action) => {
-    if (!cancelled) {
+    if (!cancelled.current) {
       dispatch(action);
     }
   };
 
   const insertDocument = async (document) => {
+    // Verifica imediatamente se o hook foi cancelado
+    if (cancelled.current) return;
+
     checkCancelBeforeDispatch({ type: "LOADING" });
 
     try {
@@ -43,17 +46,23 @@ export const useInsertDocument = (docCollection) => {
         newDocument
       );
 
+      // Se foi cancelado durante a operação, não despacha ação
+      if (cancelled.current) return;
+
       checkCancelBeforeDispatch({
         type: "INSERTED_DOC",
         payload: insertedDocument,
       });
     } catch (error) {
+      if (cancelled.current) return;
       checkCancelBeforeDispatch({ type: "ERROR", payload: error.message });
     }
   };
 
   useEffect(() => {
-    return () => setCancelled(true);
+    return () => {
+      cancelled.current = true;
+    };
   }, []);
 
   return { insertDocument, response };
